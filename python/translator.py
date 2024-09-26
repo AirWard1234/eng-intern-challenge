@@ -28,6 +28,9 @@ BRAILLE_DICT = {
     "o..ooo": "z",
 }
 
+# flip the braille dictionary and call it ENGLISH_DICT
+ENGLISH_DICT = {v: k for k, v in BRAILLE_DICT.items()}
+
 def braille_to_english(text):
     # empty list for the decoded words
     decoded_message = []
@@ -59,8 +62,6 @@ def braille_to_english(text):
     return ''.join(decoded_message)
 
 def english_to_braille(text):
-    # flip the braille dictionary and call it ENGLISH_DICT
-    ENGLISH_DICT = {v: k for k, v in BRAILLE_DICT.items()}
     # main array for the output
     decoded_message = []
     # loop through the characters in the text
@@ -77,10 +78,18 @@ def english_to_braille(text):
 
     return ''.join(decoded_message)
 
+
 # Examples
 # 'Hello World' braille .....oo.oo..o..o..o.o.o.o.o.o.o..oo............o.ooo.oo..oo.o.ooo.o.o.o.oo.o..
 text = input("")
 
-decoded_message = braille_to_english(text)
-# decoded_message = english_to_braille(text)
+# check if the first 3 letters are either o or . , this is to make sure the computer doesnt detect a English word that starts with an o to be braille. (I don't believe theres any word that starts with 3 'o's)
+if text[0] == "o" and (text[1] == "o" or ".") and (text[2] == "o" or "."):
+    decoded_message = braille_to_english(text)
+# or, if the first letter is in the alphabet or is a digit, turn it from English to braille
+elif text[0].isalpha() or text[0].isdigit():
+    decoded_message = english_to_braille(text)
+else:
+    decoded_message = braille_to_english(text)
+
 print(decoded_message)
