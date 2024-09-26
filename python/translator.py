@@ -1,3 +1,4 @@
+# braille dictionary for all the letters
 BRAILLE_DICT = {
     "o.....": "a", 
     "o.o...": "b",
@@ -40,6 +41,14 @@ def braille_to_english(text):
         # if any chunk of 6 characters is "......", add a space to the decoded_message list
         if braille_char == "......":
             decoded_message.append(' ')
+        # check if the chunk contains an uppercase indicator
+        elif braille_char == ".....o":
+            # find the next chunk
+            braille_char = text[i+6: i+12]
+            # append what's found in the dictionary for the next chunk, but make it uppercase
+            decoded_message.append((BRAILLE_DICT.get(braille_char, '')).upper())
+            # move forward by a chunk so that we don't get repeating characters
+            i+=6
         else:
             # if its not a space, take the chunk and get a correlating letter from the dictionary stated above and append it to our list
             decoded_message.append(BRAILLE_DICT.get(braille_char, ''))
@@ -49,8 +58,29 @@ def braille_to_english(text):
     
     return ''.join(decoded_message)
 
-# Example usage
+def english_to_braille(text):
+    # flip the braille dictionary and call it ENGLISH_DICT
+    ENGLISH_DICT = {v: k for k, v in BRAILLE_DICT.items()}
+    # main array for the output
+    decoded_message = []
+    # loop through the characters in the text
+    for english_char in text:
+        # detect spaces
+        if english_char == " ":
+            decoded_message.append('......')
+        # detect uppercase letters
+        elif english_char.isupper():
+            # if the letter is upper case, put ".....o" and then use the ENGLISH_DICT to locate the lowercase version of the character
+            decoded_message.append(".....o" + ENGLISH_DICT.get(english_char.lower(), ''))
+        else:
+            decoded_message.append(ENGLISH_DICT.get(english_char, ''))
+
+    return ''.join(decoded_message)
+
+# Examples
+# 'Hello World' braille .....oo.oo..o..o..o.o.o.o.o.o.o..oo............o.ooo.oo..oo.o.ooo.o.o.o.oo.o..
 text = input("")
 
 decoded_message = braille_to_english(text)
+# decoded_message = english_to_braille(text)
 print(decoded_message)
