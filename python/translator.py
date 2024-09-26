@@ -74,8 +74,12 @@ def braille_to_english(text):
         elif braille_char == ".....o":
             # find the next chunk
             braille_char = text[i+6: i+12]
+            # if its "o..oo." append "O" because we cannot have a capital ">"
+            if braille_char == "o..oo.":
+                decoded_message.append("O")
             # append what's found in the dictionary for the next chunk, but make it uppercase
-            decoded_message.append((BRAILLE_DICT.get(braille_char, '')).upper())
+            else:
+                decoded_message.append((BRAILLE_DICT.get(braille_char, '')).upper())
             # move forward by a chunk so that we don't get repeating characters
             i+=6
         # detect if the chunk is numbers
@@ -83,6 +87,13 @@ def braille_to_english(text):
             braille_char = text[i+6: i+12]
             decoded_message.append((BRAILLE_NUM_DICT.get(braille_char, '')))
             i+=6
+        # detect a difference between "o" and ">"
+        elif braille_char == "o..oo.":
+            # if the previous char and the next char is a number, the append ">", this is to stop things like "Hell> W>rld"
+            if text[i-6].isdigit() and text[i+6].isdigit():
+                decoded_message.append(">")
+            else:
+                decoded_message.append("o")
         # detect if the chunk is a decimal
         elif braille_char == ".o...o":
             braille_char = text[i+6: i+12]
@@ -109,11 +120,17 @@ def english_to_braille(text):
             decoded_message.append('......')
         # detect uppercase letters
         elif english_char.isupper():
+            if english_char == "O":
+                decoded_message.append(".....o" + "o..oo.")
             # if the letter is upper case, put ".....o" and then use the ENGLISH_DICT to locate the lowercase version of the character
-            decoded_message.append(".....o" + ENGLISH_DICT.get(english_char.lower(), ''))
+            else:
+                decoded_message.append(".....o" + ENGLISH_DICT.get(english_char.lower(), ''))
         #  detect if the character is a number
         elif english_char.isdigit():
             decoded_message.append(".o.ooo" + ENGLISH_NUM_DICT.get(english_char, ''))
+        # check if its a 'o' verses a '>'
+        elif english_char.isalpha() and english_char == "o":
+            decoded_message.append("o..oo.")
         # detect if the character is a decimal
         elif english_char == ".":
             if i + 1 < len(text) and text[i + 1].isdigit():
