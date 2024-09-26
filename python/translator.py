@@ -1,4 +1,4 @@
-# braille dictionary for all the letters
+# braille dictionaries for all the characters
 BRAILLE_DICT = {
     "o.....": "a", 
     "o.o...": "b",
@@ -26,10 +26,36 @@ BRAILLE_DICT = {
     "oo..oo": "x",
     "oo.ooo": "y",
     "o..ooo": "z",
+    "..oo.o": ".",
+    "..o...": ",",
+    "..o.oo": "?",
+    "..ooo.": "!",
+    "..oo..": ":",
+    "..o.o.": ";",
+    "....oo": "-",
+    ".o..o.": "/",
+    ".oo..o": "<",
+    "o..oo.": ">",
+    "o.o..o": "(",
+    ".o.oo.": ")",
+
+}
+BRAILLE_NUM_DICT = {
+    "o.....": "1", 
+    "o.o...": "2",
+    "oo....": "3",
+    "oo.o..": "4",
+    "o..o..": "5",
+    "ooo...": "6",
+    "oooo..": "7",
+    "o.oo..": "8",
+    ".oo...": "9",
+    ".ooo..": "0",
 }
 
-# flip the braille dictionary and call it ENGLISH_DICT
+# flip the braille dictionaries for English purposes
 ENGLISH_DICT = {v: k for k, v in BRAILLE_DICT.items()}
+ENGLISH_NUM_DICT = {v: k for k, v in BRAILLE_NUM_DICT.items()}
 
 def braille_to_english(text):
     # empty list for the decoded words
@@ -52,6 +78,16 @@ def braille_to_english(text):
             decoded_message.append((BRAILLE_DICT.get(braille_char, '')).upper())
             # move forward by a chunk so that we don't get repeating characters
             i+=6
+        # detect if the chunk is numbers
+        elif braille_char == ".o.ooo":
+            braille_char = text[i+6: i+12]
+            decoded_message.append((BRAILLE_NUM_DICT.get(braille_char, '')))
+            i+=6
+        # detect if the chunk is a decimal
+        elif braille_char == ".o...o":
+            braille_char = text[i+6: i+12]
+            decoded_message.append("."+ (BRAILLE_NUM_DICT.get(braille_char, '')))
+            i+=6
         else:
             # if its not a space, take the chunk and get a correlating letter from the dictionary stated above and append it to our list
             decoded_message.append(BRAILLE_DICT.get(braille_char, ''))
@@ -65,7 +101,9 @@ def english_to_braille(text):
     # main array for the output
     decoded_message = []
     # loop through the characters in the text
-    for english_char in text:
+    i = 0
+    while i < len(text):
+        english_char = text[i]
         # detect spaces
         if english_char == " ":
             decoded_message.append('......')
@@ -73,14 +111,26 @@ def english_to_braille(text):
         elif english_char.isupper():
             # if the letter is upper case, put ".....o" and then use the ENGLISH_DICT to locate the lowercase version of the character
             decoded_message.append(".....o" + ENGLISH_DICT.get(english_char.lower(), ''))
+        #  detect if the character is a number
+        elif english_char.isdigit():
+            decoded_message.append(".o.ooo" + ENGLISH_NUM_DICT.get(english_char, ''))
+        # detect if the character is a decimal
+        elif english_char == ".":
+            if i + 1 < len(text) and text[i + 1].isdigit():
+                decoded_message.append(".o...o" + ENGLISH_NUM_DICT.get(text[i], ''))
+                i+=1
+                if i < len(text):
+                    decoded_message.append(ENGLISH_NUM_DICT.get(text[i], ''))
+            else:
+                decoded_message.append("..oo.o")
         else:
             decoded_message.append(ENGLISH_DICT.get(english_char, ''))
 
+        i+=1
+
     return ''.join(decoded_message)
 
-
-# Examples
-# 'Hello World' braille .....oo.oo..o..o..o.o.o.o.o.o.o..oo............o.ooo.oo..oo.o.ooo.o.o.o.oo.o..
+# ask user to input as text
 text = input("")
 
 # check if the first 3 letters are either o or . , this is to make sure the computer doesnt detect a English word that starts with an o to be braille. (I don't believe theres any word that starts with 3 'o's)
